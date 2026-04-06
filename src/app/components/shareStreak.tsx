@@ -7,7 +7,7 @@ import {FaXTwitter, FaLinkedin,} from "react-icons/fa6";
 import { toast } from "sonner";
 export function ShareStreak({ streak }: { streak: number }) {
   const message = `I just hit a ${streak}-day streak on Lock In! 🚀 Shipping code every single day. #BuildInPublic #LockIn`;
-  const shareUrl = "https://your-app-link.vercel.app"; // Replace with your live URL later
+  const shareUrl = "https://lock-in-sable-one.vercel.app/"; 
 
   const shareLinks = {
     x: `https://twitter.com/intent/tweet?text=${encodeURIComponent(message)}&url=${shareUrl}`,
