@@ -30,7 +30,7 @@ const { currentStreak, longestStreak, lastShipped } = getStreakStats(allProofs);
         <p className="text-sm md:text-base text-zinc-500">Your journey, documented in code and sweat.</p>
       </header>
 
-      {totalProofs > -1 && (
+      {totalProofs > 1 && (
         <div className="w-full overflow-hidden">
           <ShareStreak streak={currentStreak} />
         </div>
