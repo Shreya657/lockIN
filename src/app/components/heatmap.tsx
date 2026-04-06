@@ -69,7 +69,7 @@ export function Heatmap({ proofs }: { proofs: any[] }) {
                     return (
                       <Tooltip key={dateStr} delayDuration={0}>
                         <TooltipTrigger asChild>
-                          <div className={`w-full aspect-square rounded-sm ${getColor(count)} transition-all cursor-pointer`} />
+                          <div className={`w-full aspect-square rounded-[1px]  ${getColor(count)} transition-all cursor-pointer`} />
                         </TooltipTrigger>
                         <TooltipContent side="top" className="bg-zinc-900 text-white border-zinc-800 text-[10px]">
                           <p className="font-bold">{count} Proofs</p>
