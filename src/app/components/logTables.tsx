@@ -1,20 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
-import { Search, ExternalLink, Rocket, Calendar, Tag } from "lucide-react";
+import { Search, ExternalLink, Rocket, Calendar, Tag, ChevronRight, Loader2 } from "lucide-react";
 import { EditProofDialog } from "./editLog";
 import { DeleteButton } from "./deleteLogBtn";
+import { format, isToday, isYesterday } from "date-fns";
+import { getMoreProofs } from "../actions/log";
+import { Button } from "@/components/ui/button";
 
-export function ProofsTable({ initialProofs }: { initialProofs: any[] }) {
+export function ProofsTable({ initialProofs, totalCount }: { initialProofs: any[]; totalCount: number }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [proofs, setProofs] = useState(initialProofs);
+  const [loading, setLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(proofs.length < totalCount);
+
+  const loadMore = async () => {
+    setLoading(true);
+    const nextProofs = await getMoreProofs(proofs.length);
+    
+    if (nextProofs.length === 0) {
+      setHasMore(false);
+    } else {
+      const updatedProofs = [...proofs, ...nextProofs];
+      setProofs(updatedProofs);
+      if (updatedProofs.length >= totalCount) 
+        setHasMore(false);
+    }
+    setLoading(false);
+  };
 
   const hasNoTasksAtAll = initialProofs.length === 0;
 
-  const filteredProofs = initialProofs.filter((proof) =>
-    proof.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    proof.category.toLowerCase().includes(searchQuery.toLowerCase())
+  // ilter the proofs first
+  const filteredProofs = proofs.filter((proof) =>{
+        const dateString = format(new Date(proof.createdAt), "MMMM do yyyy").toLowerCase();
+   return proof.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    proof.category.toLowerCase().includes(searchQuery.toLowerCase())||
+    dateString.includes(searchQuery.toLowerCase())
+  }
   );
+
+  //  groupify by date
+  const groupedProofs = useMemo(() => {
+    const groups: { [key: string]: any[] } = {};
+    
+    filteredProofs.forEach((proof) => {
+      const dateKey = format(new Date(proof.createdAt), "yyyy-MM-dd");
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(proof);
+    });
+
+    // sort dates descending(newest first)
+    return Object.keys(groups)
+      .sort((a, b) => b.localeCompare(a))
+      .map((date) => ({
+        date,
+        proofs: groups[date],
+      }));
+  }, [filteredProofs]);
+
+  const getDateLabel = (dateStr: string) => {
+    const date = new Date(dateStr);
+    if (isToday(date)) return "Today";
+    if (isYesterday(date)) return "Yesterday";
+    return format(date, "MMMM do, yyyy");
+  };
 
   if (hasNoTasksAtAll) {
     return (
@@ -31,92 +84,104 @@ export function ProofsTable({ initialProofs }: { initialProofs: any[] }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* search bar */}
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-500" />
         <Input
-          placeholder="Search logs..."
+          placeholder="Search by title or category or dates..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10 bg-zinc-950 border-zinc-800 focus:ring-red-500 w-full md:w-1/3 text-white"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {filteredProofs.map((proof) => (
-          <div key={proof.id} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 space-y-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <h4 className="font-bold text-white text-lg">{proof.title}</h4>
-                <div className="flex items-center gap-2 mt-1">
-                   <Tag className="w-3 h-3 text-zinc-500" />
-                   <span className="text-xs text-zinc-400 uppercase tracking-wider">{proof.category}</span>
-                </div>
+      {/* grouped Logs  */}
+      <div className="space-y-10">
+        {groupedProofs.length > 0 ? (
+          groupedProofs.map((group) => (
+            <div key={group.date} className="relative">
+              <div className="sticky top-0 z-10 flex items-center gap-4 mb-4 bg-black/50 backdrop-blur-sm py-2">
+                <div className="h-px flex-1 bg-zinc-800" />
+                <span className="text-xs font-bold uppercase tracking-widest text-zinc-500">
+                  {getDateLabel(group.date)}
+                </span>
+                <div className="h-px flex-1 bg-zinc-800" />
               </div>
-              <div className="flex gap-2">
-                {proof.proofUrl && (
-                  <a href={proof.proofUrl} target="_blank" className="p-2 bg-zinc-900 rounded-lg text-zinc-400">
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
-                <EditProofDialog proof={proof} />
-                <DeleteButton id={proof.id} />
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500 pt-2 border-t border-zinc-900">
-              <Calendar className="w-3 h-3" />
-              {new Date(proof.createdAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}
-            </div>
-          </div>
-        ))}
-      </div>
 
-      <div className="hidden md:block border border-zinc-800 rounded-xl overflow-hidden bg-zinc-950/50">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-zinc-900/50 text-zinc-400 uppercase text-xs">
-            <tr>
-              <th className="px-6 py-4 font-medium">Work Title</th>
-              <th className="px-6 py-4 font-medium text-center">Category</th>
-              <th className="px-6 py-4 font-medium text-center">Date</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-800">
-            {filteredProofs.length > 0 ? (
-              filteredProofs.map((proof) => (
-                <tr key={proof.id} className="hover:bg-zinc-900/30 transition-colors group">
-                  <td className="px-6 py-4 font-medium text-white">{proof.title}</td>
-                  <td className="px-6 py-4 text-center">
-                    <span className="px-2 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-400 uppercase">
-                      {proof.category}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-center text-zinc-500">
-                    {new Date(proof.createdAt).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="grid grid-cols-1 gap-3">
+                {group.proofs.map((proof) => (
+                  <div 
+                    key={proof.id} 
+                    className="group relative flex items-center justify-between p-4 rounded-xl bg-zinc-950 border border-zinc-800 hover:border-zinc-700 transition-all"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex flex-col">
+                        <h4 className="font-semibold text-zinc-100 group-hover:text-white transition-colors">
+                          {proof.title}
+                        </h4>
+                        <div className="flex items-center gap-3 mt-1">
+                          <span className="flex items-center gap-1 text-[10px] uppercase font-bold text-red-500 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                            {proof.category}
+                          </span>
+                          <span className="text-[10px] text-zinc-500">
+                            {format(new Date(proof.createdAt), "hh:mm a")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 md:group-hover:opacity-100 transition-opacity">
                       {proof.proofUrl && (
-                        <a href={proof.proofUrl} target="_blank" className="text-zinc-500 hover:text-blue-500 p-1">
+                        <a 
+                          href={proof.proofUrl} 
+                          target="_blank" 
+                          className="p-2 hover:bg-zinc-900 rounded-lg text-zinc-500 hover:text-white transition-colors"
+                        >
                           <ExternalLink className="w-4 h-4" />
                         </a>
                       )}
                       <EditProofDialog proof={proof} />
                       <DeleteButton id={proof.id} />
                     </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={4} className="px-6 py-10 text-center text-zinc-600 italic">
-                  No results found for "{searchQuery}"
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                    
+                    <div className="flex md:hidden items-center gap-2">
+                         <EditProofDialog proof={proof} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-20 text-zinc-600 italic">
+            No results found for "{searchQuery}"
+          </div>
+        )}
       </div>
+      
+              {hasMore && (
+        <div className="flex justify-center pt-8">
+          <Button 
+            onClick={loadMore} 
+            disabled={loading}
+            variant="outline"
+
+            className="border-zinc-800 text-black hover:text-zinc-100 hover:bg-zinc-800"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading...
+              </>
+            ) : (
+              "Load More Activities"
+              
+            )}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

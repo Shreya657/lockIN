@@ -14,6 +14,10 @@ export default async function ProofsPage() {
   const allProofs = await prisma.proof.findMany({
     where: { userId: session?.user.id },
     orderBy: { createdAt: "desc" },
+    take: 7,
+  });
+  const totalCount = await prisma.proof.count({
+    where: { userId: session?.user.id }
   });
 const { currentStreak, longestStreak, lastShipped } = getStreakStats(allProofs);
   // for stats
@@ -87,7 +91,7 @@ const { currentStreak, longestStreak, lastShipped } = getStreakStats(allProofs);
       )}
         
       <div className="w-full overflow-hidden">
-        <ProofsTable initialProofs={allProofs} />
+        <ProofsTable initialProofs={allProofs} totalCount={totalCount} />
       </div>
     </div>
   );

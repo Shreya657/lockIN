@@ -75,3 +75,19 @@ export async function updateProof(id: string, formData: {
 
   revalidatePath("/dashboard");
 }
+
+
+//fn for pagination
+
+export async function getMoreProofs(skip: number) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) 
+    throw new Error("Unauthorized");
+
+  return await prisma.proof.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+    skip: skip, //how many items to jump over before it starts counting the next 7
+    take: 7, // fetch 7 more items
+  });
+}
