@@ -185,3 +185,4 @@ export function ProofsTable({ initialProofs, totalCount }: { initialProofs: any[
     </div>
   );
 }
+
