@@ -1,36 +1,35 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lock In — Proof of Work Tracker
 
-## Getting Started
+**Lock In** is a full-stack productivity engine designed for developers who want to turn their daily "sweat" into data. Stop yapping, start shipping, and visualize your consistency with a high-fidelity contribution heatmap and streak tracking.
 
-First, run the development server:
+![Lock In Dashboard Preview](https://github.com/user-attachments/assets/31606f6b-9441-4677-9a1f-c0b63117d5a0) ## 🚀 Live Demo
+[Check out the App](https://lock-in-sable-one.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Features
+- **📊 Activity Heatmap:** A custom-built contribution graph (inspired by GitHub) to visualize your daily progress.
+- **🔥 Streak Engine:** Smart logic that tracks your current and longest streaks, normalized to IST.
+- **📱 Mobile-First UI:** Optimized navigation and card-based activity logs for logging on the go.
+- **🔍 Intelligent Search:** Filter your proof-of-work by title, category, or even specific dates.
+- **🔐 Secure Auth:** Seamless authentication powered by Better Auth.
+- **⚡ Performance Optimized:** Grouped timelines and paginated logs using `useMemo` and Server Actions for a buttery-smooth experience.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
+- **Framework:** [Next.js 15](https://nextjs.org/) (App Router)
+- **Database:** [PostgreSQL](https://www.postgresql.org/) (Hosted on Neon)
+- **ORM:** [Prisma](https://www.prisma.io/)
+- **Authentication:** [Better Auth](https://better-auth.com/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/) + [Shadcn/ui](https://ui.shadcn.com/)
+- **Icons:** [Lucide React](https://lucide.dev/)
+- **Date Handling:** [date-fns](https://date-fns.org/) & [date-fns-tz](https://github.com/marnusw/date-fns-tz)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Architecture
+The app follows a modern server-client architecture:
+- **Server Components:** High-performance initial data fetching.
+- **Server Actions:** Secure database mutations and paginated data fetching.
+- **Optimized Client State:** Efficient re-rendering and data grouping using React hooks.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏁 Getting Started
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. **Clone the repo:**
+   ```bash
+   git clone https://github.com/Shreya657/lockIN
